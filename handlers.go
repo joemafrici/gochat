@@ -8,8 +8,6 @@ import (
 
 // ***********************************************
 func handler(w http.ResponseWriter, r *http.Request) {
-	//log.Println("in handler")
-	//log.Println(r.URL.Path)
 	switch r.URL.Path {
 	case "/signup-submit":
 		submitHandler(w, r)
@@ -47,10 +45,10 @@ func loginHandler(w http.ResponseWriter, r *http.Request) {
 			// need to check if they already have a valid sessionID
 			cookie, err := r.Cookie("sessionID")
 			if err == http.ErrNoCookie {
-				user.SessionID = generateSessionID()
+				user.SessionToken = generateSessionID()
 				cookie := http.Cookie{
 					Name:     "sessionID",
-					Value:    user.SessionID,
+					Value:    user.SessionToken,
 					Path:     "/",
 					HttpOnly: true,
 					Secure:   false, // true for production

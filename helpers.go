@@ -23,7 +23,11 @@ func sessionValid(r *http.Request) (valid bool) {
 	if err == http.ErrNoCookie {
 		valid = false
 	} else {
-
+		thing, ok := sessions[cookie.Value]
+		if thing.Active == true {
+			valid = true
+			return
+		}
 	}
 	return
 }
