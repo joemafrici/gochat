@@ -14,5 +14,13 @@ type Session struct {
 	Active       bool
 }
 
+func NewSession(username string, sessionToken string, active bool) *Session {
+	return &Session{
+		Username:     username,
+		SessionToken: sessionToken,
+		Active:       active,
+	}
+}
+
 // for if you do the data hiding thing
 //func (usr *User) Username() string { return usr.username }
