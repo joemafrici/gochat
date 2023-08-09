@@ -24,7 +24,7 @@ func main() {
 	testuser := User{
 		Username:       "deepwater",
 		Password:       "passwd",
-		SessionToken:   generateSessionID(),
+		SessionToken:   generateSessionToken(),
 		FriendRequests: list.New(),
 	}
 	testSession := Session{
@@ -32,7 +32,6 @@ func main() {
 		SessionToken: testuser.SessionToken,
 		Active:       true,
 	}
-
 	sessions[testuser.SessionToken] = testSession
 	dbase[testuser.Username] = testuser
 	testuser.FriendRequests.PushBack("Goribus")
