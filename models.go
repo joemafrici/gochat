@@ -14,5 +14,6 @@ type Session struct {
 	Active       bool
 }
 
+
 // for if you do the data hiding thing
 //func (usr *User) Username() string { return usr.username }

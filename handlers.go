@@ -26,6 +26,15 @@ func handler(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
+// idiomatic http handler naming
+func handleGetUserById() {
+
+}
+
+func handleResizeImage() {
+
+}
+
 // ***********************************************
 // verify username/password with database
 // create a temporary user session
@@ -40,35 +49,27 @@ func handler(w http.ResponseWriter, r *http.Request) {
 // or could use json web tokens
 func loginHandler(w http.ResponseWriter, r *http.Request) {
 	user, userExists := dbase[r.FormValue("username")]
-	if userExists == true {
-		if r.FormValue("password") == user.Password {
-			// need to check if they already have a valid sessionID
-			cookie, err := r.Cookie("sessionID")
-			if err == http.ErrNoCookie {
-				user.SessionToken = generateSessionID()
-				cookie := http.Cookie{
-					Name:     "sessionID",
-					Value:    user.SessionToken,
-					Path:     "/",
-					HttpOnly: true,
-					Secure:   false, // true for production
-					SameSite: http.SameSiteStrictMode,
-					MaxAge:   3600,
-				}
-
+	if userExists == true && user.Password == r.FormValue("password") {
+		_, err := r.Cookie("sessionToken")
+		if err == http.ErrNoCookie {
+			user.SessionToken = generateSessionToken()
+			cookie := &http.Cookie{
+				Name:     "sessionToken",
+				Value:    user.SessionToken,
+				Path:     "/",
+				HttpOnly: true,
+				Secure:   false, // true for production
+				SameSite: http.SameSiteStrictMode,
+				MaxAge:   3600,
 			}
-			http.SetCookie(w, &cookie)
-			loginSuccessHandler(w, r)
+			http.SetCookie(w, cookie)
 		} else {
-			// incorrect password
-			w.WriteHeader(401)
-			log.Printf("%v log in request. Incorrect password\n", user.Username)
+			// logged in and request has cookie
 		}
+		loginSuccessHandler(w, r)
 	} else {
-		// user does not exist
 		w.WriteHeader(401)
-		log.Printf("%v log in request. Does not exist\n",
-			r.FormValue("username"))
+		log.Printf("log in request failed")
 	}
 }
 

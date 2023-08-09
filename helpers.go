@@ -8,7 +8,7 @@ import (
 )
 
 // ***********************************************
-func generateSessionID() string {
+func generateSessionToken() string {
 	b := make([]byte, 32)
 	_, err := rand.Read(b)
 	if err != nil {
@@ -23,7 +23,7 @@ func sessionValid(r *http.Request) (valid bool) {
 	if err == http.ErrNoCookie {
 		valid = false
 	} else {
-		thing, ok := sessions[cookie.Value]
+		thing, _ := sessions[cookie.Value]
 		if thing.Active == true {
 			valid = true
 			return
@@ -33,6 +33,26 @@ func sessionValid(r *http.Request) (valid bool) {
 }
 
 // ***********************************************
+func findUser(r *http.Request) (user User, userExists bool) {
+	user, userExists = dbase[r.FormValue("username")]
+	return 
+}
+
+// ***********************************************
 func addFriend(w http.ResponseWriter, r *http.Request) {
 	// need to keep track of who is logged in
+	if sessionValid(r) {
+		user, userExists := findUser(r)
+		if userExists {
+			cookie, err := r.Cookie("sessionToken")
+			if err == http.ErrNoCookie {
+
+			} else {
+				user, exists := sessions[cookie.Value]
+			}
+
+		}
+	} else {
+		log.Println("addFriend session invalid")
+	}
 }
