@@ -10,19 +10,15 @@ import (
 func handler(w http.ResponseWriter, r *http.Request) {
 	switch r.URL.Path {
 	case "/signup-submit":
-		submitHandler(w, r)
+		handleSubmit(w, r)
 	case "/login-submit":
-		loginHandler(w, r)
+		handleLogin(w, r)
 	case "/addfriend-submit":
 		addFriend(w, r)
 	case "/":
-		if sessionValid(r) == true {
-			loginSuccessHandler(w, r)
-		} else {
-			indexHandler(w, r)
-		}
+		handleIndex(w, r)
 	default:
-		indexHandler(w, r)
+		handleIndex(w, r)
 	}
 }
 
@@ -47,34 +43,63 @@ func handleResizeImage() {
 // see HMAC algorithm to sign
 // url encode cookie (for compatibility)
 // or could use json web tokens
-func loginHandler(w http.ResponseWriter, r *http.Request) {
+func handleLogin(w http.ResponseWriter, r *http.Request) {
 	user, userExists := dbase[r.FormValue("username")]
 	if userExists == true && user.Password == r.FormValue("password") {
-		_, err := r.Cookie("sessionToken")
-		if err == http.ErrNoCookie {
-			user.SessionToken = generateSessionToken()
-			cookie := &http.Cookie{
-				Name:     "sessionToken",
-				Value:    user.SessionToken,
-				Path:     "/",
-				HttpOnly: true,
-				Secure:   false, // true for production
-				SameSite: http.SameSiteStrictMode,
-				MaxAge:   3600,
-			}
-			http.SetCookie(w, cookie)
-		} else {
-			// logged in and request has cookie
-		}
-		loginSuccessHandler(w, r)
+		handleLoginSuccess(w, r, user)
 	} else {
-		w.WriteHeader(401)
-		log.Printf("log in request failed")
+		handleLoginFailure(w, r)
 	}
 }
 
 // ***********************************************
-func submitHandler(w http.ResponseWriter, r *http.Request) {
+func handleLoginSuccess(w http.ResponseWriter, r *http.Request, u User) {
+	_, err := r.Cookie("sessionToken")
+	if err == http.ErrNoCookie {
+		s := NewSession(u.Username, generateSessionToken(), true)
+		u.SessionToken = s.SessionToken
+		c := &http.Cookie{
+			Name:     "sessionToken",
+			Value:    u.SessionToken,
+			Path:     "/",
+			HttpOnly: true,
+			Secure:   false, // true for production
+			SameSite: http.SameSiteStrictMode,
+			MaxAge:   3600,
+		}
+		http.SetCookie(w, c)
+	} else {
+		// logged in and request has cookie
+		//validateCookie()
+	}
+	serveLoginSuccess(w, r)
+}
+
+// ***********************************************
+func handleLoginFailure(w http.ResponseWriter, r *http.Request) {
+	w.WriteHeader(401)
+	log.Printf("log in request failed")
+}
+
+// ***********************************************
+func serveLoginSuccess(w http.ResponseWriter, r *http.Request) {
+	var fileName = "loginSuccess.html"
+	t, err := template.ParseFiles(fileName)
+	if err != nil {
+		log.Printf("Error: Parsing %v\n", fileName)
+		return
+	}
+	user, _ := dbase[r.FormValue("username")]
+	t.ExecuteTemplate(w, fileName, user)
+}
+
+// ***********************************************
+func serveLoginFailure() {
+
+}
+
+// ***********************************************
+func handleSubmit(w http.ResponseWriter, r *http.Request) {
 	user, ok := dbase[r.FormValue("username")]
 	if ok == true {
 		// user does exist
@@ -89,24 +114,17 @@ func submitHandler(w http.ResponseWriter, r *http.Request) {
 }
 
 // ***********************************************
-func loginSuccessHandler(w http.ResponseWriter, r *http.Request) {
-	var fileName = "loginSuccess.html"
-	t, err := template.ParseFiles(fileName)
-	if err != nil {
-		log.Printf("Error: Parsing %v\n", fileName)
-		return
-	}
-	user, _ := dbase[r.FormValue("username")]
-	t.ExecuteTemplate(w, fileName, user)
-}
-
-// ***********************************************
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	var fileName = "index.html"
-	t, err := template.ParseFiles(fileName)
-	if err != nil {
-		log.Printf("Error: Parsing %v\n", fileName)
-		return
-	}
-	t.ExecuteTemplate(w, fileName, nil)
+func handleIndex(w http.ResponseWriter, r *http.Request) {
+	if sessionValid(r) == true {
+		log.Println("not implemented")
+		//handleLoginSuccess(w, r)
+	} else {
+		var fileName = "index.html"
+		t, err := template.ParseFiles(fileName)
+		if err != nil {
+			log.Printf("Error: Parsing %v\n", fileName)
+			return
+		}
+		t.ExecuteTemplate(w, fileName, nil)
+	}	
 }

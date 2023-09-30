@@ -14,12 +14,15 @@ type Session struct {
 	Active       bool
 }
 
-func NewSession(username string, sessionToken string, active bool) *Session {
-	return &Session{
+func NewSession(username string, sessionToken string, active bool) Session {
+	session := Session{
 		Username:     username,
 		SessionToken: sessionToken,
 		Active:       active,
 	}
+	sessions[sessionToken] = session
+	return session
+	
 }
 
 // for if you do the data hiding thing

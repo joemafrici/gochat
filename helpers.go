@@ -19,14 +19,14 @@ func generateSessionToken() string {
 
 // ***********************************************
 func sessionValid(r *http.Request) (valid bool) {
-	cookie, err := r.Cookie("sessionID")
+	valid = false
+	c, err := r.Cookie("sessionToken")
 	if err == http.ErrNoCookie {
 		valid = false
 	} else {
-		thing, _ := sessions[cookie.Value]
-		if thing.Active == true {
+		s , _ := sessions[c.Value]
+		if s.Active == true {
 			valid = true
-			return
 		}
 	}
 	return
@@ -42,13 +42,15 @@ func findUser(r *http.Request) (user User, userExists bool) {
 func addFriend(w http.ResponseWriter, r *http.Request) {
 	// need to keep track of who is logged in
 	if sessionValid(r) {
-		user, userExists := findUser(r)
+		//user, userExists := findUser(r)
+		_, userExists := findUser(r)
 		if userExists {
-			cookie, err := r.Cookie("sessionToken")
+			//cookie, err := r.Cookie("sessionToken")
+			_, err := r.Cookie("sessionToken")
 			if err == http.ErrNoCookie {
 
 			} else {
-				user, exists := sessions[cookie.Value]
+				//user, exists := sessions[cookie.Value]
 			}
 
 		}
