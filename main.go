@@ -35,7 +35,7 @@ func main() {
 	sessions[testuser.SessionToken] = testSession
 	dbase[testuser.Username] = testuser
 	testuser.FriendRequests.PushBack("Goribus")
-    // check if the above line changes the testuser in dbase
+	// check if the above line changes the testuser in dbase
 	http.HandleFunc("/", handler)
 	log.Println("gochat listening on port 8080...")
 	log.Fatal(http.ListenAndServe(":8080", nil))

@@ -115,11 +115,11 @@ func handleSubmit(w http.ResponseWriter, r *http.Request) {
 
 // ***********************************************
 func handleIndex(w http.ResponseWriter, r *http.Request) {
-	if sessionValid(r) == true {
+	if sessionValid(r) {
 		log.Println("not implemented")
 		//handleLoginSuccess(w, r)
 	} else {
-		var fileName = "index.html"
+		var fileName = "www/index.html"
 		t, err := template.ParseFiles(fileName)
 		if err != nil {
 			log.Printf("Error: Parsing %v\n", fileName)
